@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f8b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Chip HEM">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<title>Calculatrice chip thinning HEM</title>
+<style>
+  :root{
+    --bg:#f6f5f2; --card:#ffffff; --ink:#1d1d1b; --muted:#6b6a65; --line:#dedcd5;
+    --accent:#1f6f8b; --accent-soft:#e3f0f4; --warn:#a14a12; --warn-soft:#fbeee4;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16171a; --card:#1f2125; --ink:#ecebe7; --muted:#a09f99; --line:#33363c;
+      --accent:#6fb8d1; --accent-soft:#1d3139; --warn:#f0a36f; --warn-soft:#3a2619; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+  main{max-width:880px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
+  h1{font-size:1.35rem;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:.92rem}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .card h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}
+  label{display:block;font-size:.88rem;margin:10px 0 4px}
+  .row{display:flex;gap:8px;align-items:center}
+  input[type=number]{width:100%;padding:8px 10px;font:inherit;font-variant-numeric:tabular-nums;
+    border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+  input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:none}
+  .seg button{border:0;background:transparent;color:var(--muted);padding:7px 10px;font:inherit;font-size:.85rem;cursor:pointer}
+  .seg button.on{background:var(--accent);color:#fff}
+  .hint{color:var(--muted);font-size:.8rem;margin-top:3px}
+  .big{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+  .big:last-of-type{border-bottom:0}
+  .big span:first-child{color:var(--muted);font-size:.9rem}
+  .val{font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums}
+  .val small{font-size:.8rem;font-weight:400;color:var(--muted);margin-left:4px}
+  .hero{background:var(--accent-soft);border-radius:8px;padding:12px 14px;margin-bottom:6px}
+  .hero .val{font-size:1.9rem;color:var(--accent)}
+  .msg{border-radius:8px;padding:9px 12px;font-size:.86rem;margin-top:10px;background:var(--warn-soft);color:var(--warn)}
+  .msg:empty{display:none}
+  pre{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:10px;font-size:.82rem;overflow-x:auto;margin:8px 0 6px;white-space:pre-wrap}
+  .copy{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:6px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+  details{margin-top:16px}
+  summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+  svg text{fill:var(--muted);font-size:11px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Calculatrice chip thinning — HEM</h1>
+  <p class="sub">Amincissement du copeau (RCTF) en fraisage à faible engagement radial. Unités en pouces.</p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Entrées</h2>
+
+      <label for="d">Diamètre de la fraise (po)</label>
+      <input id="d" type="number" inputmode="decimal" step="0.0001" min="0" value="0.5">
+
+      <label for="z">Nombre de dents</label>
+      <input id="z" type="number" inputmode="decimal" step="1" min="1" value="4">
+
+      <label for="ae">Engagement radial (ae)</label>
+      <div class="row">
+        <input id="ae" type="number" inputmode="decimal" step="0.001" min="0" value="0.05">
+        <div class="seg" id="aeUnit"><button data-v="in" class="on">po</button><button data-v="pct">% D</button></div>
+      </div>
+      <div class="hint" id="aeHint"></div>
+
+      <label for="hex">Épaisseur de copeau visée (po/dent)</label>
+      <input id="hex" type="number" inputmode="decimal" step="0.0001" min="0" value="0.002">
+      <div class="hint">L'avance par dent du fabricant pour une coupe à 50 % de D ou plus.</div>
+
+      <label for="v">Vitesse de coupe</label>
+      <div class="row">
+        <input id="v" type="number" inputmode="decimal" step="1" min="0" value="800">
+        <div class="seg" id="vUnit"><button data-v="sfm" class="on">SFM</button><button data-v="rpm">RPM</button></div>
+      </div>
+
+      <label for="rpmMax">RPM max de la broche</label>
+      <input id="rpmMax" type="number" inputmode="decimal" step="100" min="0" value="12000">
+
+      <label for="ap">Profondeur axiale ap (po) — optionnel, pour le MRR</label>
+      <input id="ap" type="number" inputmode="decimal" step="0.01" min="0" value="1">
+    </section>
+
+    <section class="card">
+      <h2>Résultats</h2>
+      <div class="hero">
+        <div class="big" style="border:0;padding:0">
+          <span>Avance programmée</span>
+          <span class="val" id="ipm">—<small>po/min</small></span>
+        </div>
+      </div>
+      <div class="big"><span>Facteur RCTF</span><span class="val" id="rctf">—</span></div>
+      <div class="big"><span>Avance par dent programmée</span><span class="val" id="fz">—<small>po/dent</small></span></div>
+      <div class="big"><span>RPM</span><span class="val" id="rpm">—</span></div>
+      <div class="big"><span>Angle d'engagement</span><span class="val" id="ang">—<small>°</small></span></div>
+      <div class="big"><span>Enlèvement de matière (MRR)</span><span class="val" id="mrr">—<small>po³/min</small></span></div>
+
+      <svg id="pic" viewBox="0 0 200 120" width="100%" height="120" aria-label="Schéma de l'engagement radial"></svg>
+
+      <div class="msg" id="msg"></div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:16px">
+    <h2>Formule pour une macro Max5</h2>
+    <pre id="macro"></pre>
+    <button class="copy" id="copyBtn">Copier</button>
+    <span class="hint" id="copied"></span>
+  </section>
+
+  <details>
+    <summary>Comment c'est calculé</summary>
+    <div class="card" style="margin-top:8px;font-size:.9rem">
+      <p style="margin-top:0">Quand ae est plus petit que la moitié du diamètre, le copeau réel est plus mince que l'avance par dent. On augmente donc l'avance pour retrouver l'épaisseur de copeau visée.</p>
+      <p><b>RCTF</b> = D / (2 × √(D × ae − ae²)) si ae &lt; D/2, sinon 1.</p>
+      <p><b>fz programmée</b> = copeau visé × RCTF<br>
+         <b>RPM</b> = SFM × 3.82 / D<br>
+         <b>Avance</b> = RPM × dents × fz programmée<br>
+         <b>MRR</b> = ae × ap × avance<br>
+         <b>Angle d'engagement</b> = arccos(1 − 2 × ae / D)</p>
+      <p style="margin-bottom:0;color:var(--muted)">La formule ne tient pas compte de l'angle d'hélice ni du rayon de coin de la fraise. Valeurs de départ : ajuster selon le fabricant de la fraise et la rigidité du montage.</p>
+    </div>
+  </details>
+</main>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const state = { aeUnit:'in', vUnit:'sfm' };
+  const fmt = (x, n) => Number.isFinite(x) ? x.toFixed(n) : '—';
+
+  function seg(id, key){
+    $(id).addEventListener('click', e=>{
+      const b = e.target.closest('button'); if(!b) return;
+      const D = +$('d').value;
+      const old = state[key], nw = b.dataset.v;
+      if(old === nw) return;
+      // convertir la valeur affichée pour garder la même coupe
+      if(key==='aeUnit' && D>0){
+        const ae = +$('ae').value;
+        $('ae').value = nw==='pct' ? +(ae/D*100).toFixed(2) : +(ae*D/100).toFixed(4);
+        $('ae').step = nw==='pct' ? '1' : '0.001';
+      }
+      if(key==='vUnit' && D>0){
+        const v = +$('v').value;
+        $('v').value = nw==='rpm' ? Math.round(v*3.82/D) : Math.round(v*D/3.82);
+        $('v').step = nw==='rpm' ? '100' : '10';
+      }
+      state[key] = nw;
+      [...$(id).children].forEach(c=>c.classList.toggle('on', c===b));
+      calc();
+    });
+  }
+  seg('aeUnit','aeUnit'); seg('vUnit','vUnit');
+
+  function calc(){
+    const D = +$('d').value, Z = +$('z').value, hex = +$('hex').value;
+    const v = +$('v').value, rpmMax = +$('rpmMax').value, ap = +$('ap').value;
+    const aeIn = state.aeUnit==='pct' ? (+$('ae').value)*D/100 : +$('ae').value;
+    const msgs = [];
+
+    $('aeHint').textContent = D>0 && aeIn>0
+      ? (state.aeUnit==='pct' ? '= ' + aeIn.toFixed(4) + ' po' : '= ' + (aeIn/D*100).toFixed(1) + ' % du diamètre')
+      : '';
+
+    if(!(D>0 && Z>0 && hex>0 && aeIn>0 && v>0)){
+      ['ipm','rctf','fz','rpm','ang','mrr'].forEach(k=>{
+        const s = $(k).querySelector('small'); $(k).firstChild.nodeValue='—'; });
+      $('msg').textContent = 'Entrer des valeurs positives.';
+      return;
+    }
+    if(aeIn > D){ msgs.push('ae dépasse le diamètre : vérifier la valeur.'); }
+
+    const aeC = Math.min(aeIn, D);
+    const rctf = aeC < D/2 ? D / (2*Math.sqrt(D*aeC - aeC*aeC)) : 1;
+    const fz = hex * rctf;
+    let rpm = state.vUnit==='sfm' ? v*3.82/D : v;
+    if(rpmMax>0 && rpm > rpmMax){
+      msgs.push('RPM calculé (' + Math.round(rpm) + ') au-dessus du max broche : limité à ' + rpmMax + '.');
+      rpm = rpmMax;
+    }
+    const ipm = rpm * Z * fz;
+    const ang = Math.acos(1 - 2*aeC/D) * 180/Math.PI;
+    const mrr = ap>0 ? aeC*ap*ipm : NaN;
+
+    if(rctf > 4) msgs.push('RCTF très élevé (ae < ~1.5 % D) : l\'avance devient extrême, vérifier les limites de la machine et du fabricant.');
+    if(fz > D*0.02) msgs.push('Avance par dent programmée élevée pour ce diamètre : vérifier la résistance de la fraise.');
+
+    const set = (id, txt) => { $(id).firstChild.nodeValue = txt; };
+    set('ipm', fmt(ipm,1)); set('rctf', fmt(rctf,3)); set('fz', fmt(fz,4));
+    set('rpm', Math.round(rpm).toString()); set('ang', fmt(ang,1)); set('mrr', fmt(mrr,2));
+    $('msg').textContent = msgs.join(' ');
+
+    $('macro').textContent =
+`(D = ${D}  DENTS = ${Z}  AE = ${aeC.toFixed(4)}  COPEAU = ${hex})
+#1 = ${D}        (DIAMETRE)
+#2 = ${aeC.toFixed(4)}   (AE)
+#3 = ${hex}      (COPEAU VISE)
+#4 = ${Z}        (DENTS)
+#5 = ${Math.round(rpm)}     (RPM)
+#6 = #3 * #1 / [2 * SQRT[#1 * #2 - #2 * #2]]  (FZ PROG, SI AE < D/2)
+#7 = #5 * #4 * #6                              (AVANCE PO/MIN)
+(RESULTAT ATTENDU : FZ = ${fz.toFixed(4)}  F = ${ipm.toFixed(1)})`;
+
+    drawPic(D, aeC);
+  }
+
+  function drawPic(D, ae){
+    // fraise vue de dessus, matière à droite, zone engagée en couleur
+    const r = 45, cx = 70, cy = 60;
+    const aeS = Math.min(ae/D, 1) * 2*r;
+    const xw = cx + r - aeS;         // limite de la matière
+    const pct = (ae/D*100).toFixed(1);
+    $('pic').innerHTML =
+      `<defs><clipPath id="cp"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs>
+       <rect x="${xw}" y="5" width="${200-xw}" height="110" fill="var(--line)"/>
+       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+       <rect x="${xw}" y="0" width="${2*r}" height="120" fill="var(--accent)" opacity=".55" clip-path="url(#cp)"/>
+       <line x1="${xw}" y1="5" x2="${xw}" y2="115" stroke="var(--ink)" stroke-dasharray="3 3" stroke-width="1"/>
+       <text x="${cx}" y="${cy+4}" text-anchor="middle">Ø ${D}</text>
+       <text x="${Math.min(xw+r*0.2+40,160)}" y="112">ae ${pct} %</text>`;
+  }
+
+  ['d','z','ae','hex','v','rpmMax','ap'].forEach(id => $(id).addEventListener('input', calc));
+  $('copyBtn').addEventListener('click', async ()=>{
+    try{ await navigator.clipboard.writeText($('macro').textContent); $('copied').textContent=' Copié.'; }
+    catch(e){ $('copied').textContent=' Copie refusée : sélectionner le texte à la main.'; }
+  });
+  calc();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+</script>
+</body>
+</html>
